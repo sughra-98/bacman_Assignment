@@ -20,6 +20,8 @@ Pacman agents (in searchAgents.py).
 import util
 from game import Directions
 from typing import List
+
+
 class SearchProblem:
     """
     This class outlines the structure of a search problem, but doesn't implement
@@ -63,8 +65,6 @@ class SearchProblem:
         util.raiseNotDefined()
 
 
-
-
 def tinyMazeSearch(problem: SearchProblem) -> List[Directions]:
     """
     Returns a sequence of moves that solves tinyMaze.  For any other maze, the
@@ -73,6 +73,7 @@ def tinyMazeSearch(problem: SearchProblem) -> List[Directions]:
     s = Directions.SOUTH
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
+
 
 def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
     """
@@ -88,7 +89,6 @@ def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
     stack = util.Stack()
     visited = set()
     start = problem.getStartState()
@@ -109,19 +109,18 @@ def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
             if successor not in visited:
                 stack.push((successor, path + [action]))
 
-    return []                            
+    return []
 
 
 def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    queue = util.Queue()                       # ← the ONE change: Queue instead of Stack
+    queue = util.Queue()
     visited = set()
     start = problem.getStartState()
     queue.push((start, []))
 
     while not queue.isEmpty():
-        state, path = queue.pop()         # ← now pops the OLDEST node (FIFO)
+        state, path = queue.pop()          # pops the OLDEST node (FIFO)
 
         if state in visited:
             continue
@@ -140,15 +139,13 @@ def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
 
 def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-
     pq = util.PriorityQueue()
     visited = set()
     start = problem.getStartState()
-    pq.push((start, [], 0), 0)            # (state, path, g), priority = g
+    pq.push((start, [], 0), 0)             # (state, path, g), priority = g
 
     while not pq.isEmpty():
-        state, path, g = pq.pop()         # ← pops cheapest g first
+        state, path, g = pq.pop()          # pops cheapest g first
 
         if state in visited:
             continue
@@ -172,33 +169,32 @@ def nullHeuristic(state, problem=None) -> float:
     """
     return 0
 
+
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directions]:
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
     pq = util.PriorityQueue()
-    visited = set()
     start = problem.getStartState()
-    h0 = heuristic(start, problem)
-    pq.push((start, [], 0), h0)           # priority = f = g + h (g=0 at start)
+    pq.push((start, [], 0), heuristic(start, problem))
+
+    best = {}   # state -> lowest g at which it has been expanded
 
     while not pq.isEmpty():
         state, path, g = pq.pop()
 
-        if state in visited:
-            continue
+        if state in best and g >= best[state]:
+            continue                       # stale entry: cheaper path already expanded
+
+        best[state] = g
 
         if problem.isGoalState(state):
             return path
 
-        visited.add(state)
-
         for successor, action, stepCost in problem.getSuccessors(state):
-            if successor not in visited:
-                g2 = g + stepCost
-                f2 = g2 + heuristic(successor, problem)   # ← the magic: g + h
-                pq.push((successor, path + [action], g2), f2)
+            g2 = g + stepCost
+            pq.push((successor, path + [action], g2), g2 + heuristic(successor, problem))
 
     return []
+
 
 # Abbreviations
 bfs = breadthFirstSearch
