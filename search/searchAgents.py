@@ -465,8 +465,52 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+    foodList = foodGrid.asList()
+    if not foodList:
+        return 0
+    gs = problem.startingGameState
+
+    # Cache 1: food-to-food maze distances (built once from the initial layout)
+    if 'pairDist' not in problem.heuristicInfo:
+        pd = {}
+        for i, f1 in enumerate(foodList):
+            for f2 in foodList[i+1:]:
+                d = mazeDistance(f1, f2, gs)
+                pd[(f1, f2)] = d
+                pd[(f2, f1)] = d
+        problem.heuristicInfo['pairDist'] = pd
+    pd = problem.heuristicInfo['pairDist']
+
+        # Cache 2: position-to-food maze distances, filled on demand
+    # (the same position recurs with different remaining food, so never
+    #  assume the cache from a previous visit is complete)
+    posKey = ('posDist', position)
+    if posKey not in problem.heuristicInfo:
+        problem.heuristicInfo[posKey] = {}
+    posDist = problem.heuristicInfo[posKey]
+    for f in foodList:
+        if f not in posDist:
+            posDist[f] = mazeDistance(position, f, gs)
+
+
+    # Prim's algorithm: grow the MST from the pacman position
+    inTree = set([position])
+    total = 0
+    while len(inTree) < len(foodList) + 1:
+        bestD = float('inf')
+        bestB = None
+        for a in inTree:
+            for b in foodList:
+                if b not in inTree:
+                    d = posDist[b] if a == position else pd[(a, b)]
+                    if d < bestD:
+                        bestD = d
+                        bestB = b
+        total += bestD
+        inTree.add(bestB)
+
+    return total
+
 
 
 class ClosestDotSearchAgent(SearchAgent):
@@ -496,9 +540,8 @@ class ClosestDotSearchAgent(SearchAgent):
         food = gameState.getFood()
         walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
+        return search.bfs(problem)
 
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -531,10 +574,9 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         The state is Pacman's position. Fill this in with a goal test that will
         complete the problem definition.
         """
-        x,y = state
+        x, y = state
+        return self.food[x][y]
 
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
 
 
 def mazeDistance(point1: Tuple[int, int], point2: Tuple[int, int], gameState: pacman.GameState) -> int:
