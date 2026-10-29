@@ -210,17 +210,61 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+    
+        def value(state, depth, agent):
+            # Terminal tests (same as minimax)
+            if state.isWin() or state.isLose() or depth == self.depth:
+                return self.evaluationFunction(state)
 
-def betterEvaluationFunction(currentGameState: GameState):
-    """
-    Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
-    evaluation function (question 5).
+            if agent == 0:
+                # Pacman → MAX (unchanged)
+                return max(value(state.generateSuccessor(agent, a), depth, 1)
+                        for a in state.getLegalActions(agent))
 
-    DESCRIPTION: <write something here so we know what you did>
-    """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+            # Ghost → CHANCE node: average instead of min!
+            nextAgent = agent + 1
+            nextDepth = depth
+            if nextAgent == state.getNumAgents():
+                nextAgent = 0
+                nextDepth = depth + 1
+
+            actions = state.getLegalActions(agent)
+            total = sum(value(state.generateSuccessor(agent, a), nextDepth, nextAgent)
+                        for a in actions)
+            return total / len(actions)
+
+        # Root: same as minimax root
+        bestAction, bestValue = None, float("-inf")
+        for action in gameState.getLegalActions(0):
+            v = value(gameState.generateSuccessor(0, action), 0, 1)
+            if v > bestValue:
+                bestValue = v
+                bestAction = action
+        return bestAction
+
+def betterEvaluationFunction(currentGameState):
+    pos = currentGameState.getPacmanPosition()
+    food = currentGameState.getFood().asList()
+    ghosts = currentGameState.getGhostStates()
+    capsules = currentGameState.getCapsules()
+    score = currentGameState.getScore()
+
+    danger = 0
+    for g in ghosts:
+        d = util.manhattanDistance(pos, g.getPosition())
+        if g.scaredTimer == 0 and d < 3:
+            danger += 1.0 / (d + 0.1)
+
+    foodDist = 0
+    if food:
+        foodDist = min(util.manhattanDistance(pos, f) for f in food)
+
+    return (score
+            - 2.0 * foodDist      # ← the proven value: your only 0-stall config
+            - 20.0 * danger
+            - 4.0 * len(food)
+            - 10.0 * len(capsules))
 
 # Abbreviation
+
 better = betterEvaluationFunction
