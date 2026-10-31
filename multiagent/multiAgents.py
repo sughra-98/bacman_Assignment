@@ -145,6 +145,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             if v > bestValue:
                 bestValue = v
                 bestAction = action
+        print("ROOT VALUE:", bestValue)
         return bestAction
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -195,6 +196,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 bestValue = v
                 bestAction = action
             alpha = max(alpha, v)
+        print("ROOT VALUE:", bestValue)
         return bestAction
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
@@ -242,28 +244,45 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                 bestAction = action
         return bestAction
 
-def betterEvaluationFunction(currentGameState):
-    pos = currentGameState.getPacmanPosition()
-    food = currentGameState.getFood().asList()
-    ghosts = currentGameState.getGhostStates()
+def betterEvaluationFunction(currentGameState: GameState):
+    # 1. Terminal states
+    if currentGameState.isWin():
+        return float('inf')
+    if currentGameState.isLose():
+        return float('-inf')
+
+    # 2. Extract game information
+    pacmanPos = currentGameState.getPacmanPosition()
+    foodList = currentGameState.getFood().asList()
+    ghostStates = currentGameState.getGhostStates()
     capsules = currentGameState.getCapsules()
+
+    # 3. Start with the existing score
     score = currentGameState.getScore()
 
-    danger = 0
-    for g in ghosts:
-        d = util.manhattanDistance(pos, g.getPosition())
-        if g.scaredTimer == 0 and d < 3:
-            danger += 1.0 / (d + 0.1)
+    # 4. Food features
+    score -= 4 * len(foodList)
+    if foodList:
+        foodDistances = [manhattanDistance(pacmanPos, food) for food in foodList]
+        nearestFood = min(foodDistances)
+        score += 10.0 / (nearestFood + 1)
 
-    foodDist = 0
-    if food:
-        foodDist = min(util.manhattanDistance(pos, f) for f in food)
+    # 5. Ghost features
+    for ghost in ghostStates:
+        ghostPos = ghost.getPosition()
+        distance = manhattanDistance(pacmanPos, ghostPos)
+        if ghost.scaredTimer > 0:
+            score += 20.0 / (distance + 1)      # chase scared ghosts
+        else:
+            if distance <= 1:
+                score -= 200
+            elif distance <= 2:
+                score -= 50
 
-    return (score
-            - 2.0 * foodDist      # ← the proven value: your only 0-stall config
-            - 20.0 * danger
-            - 4.0 * len(food)
-            - 10.0 * len(capsules))
+    # 6. Power capsules
+    score -= 15 * len(capsules)
+
+    return score
 
 # Abbreviation
 
