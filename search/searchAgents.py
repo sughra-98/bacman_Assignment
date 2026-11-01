@@ -281,10 +281,9 @@ class CornersProblem(search.SearchProblem):
         """
         Stores the walls, pacman's starting position and corners.
         """
-
         self.walls = startingGameState.getWalls()
         self.startingPosition = startingGameState.getPacmanPosition()
-        self.startingGameState = startingGameState   # kept for mazeDistance in the heuristic
+        self.startingGameState = startingGameState
         top, right = self.walls.height-2, self.walls.width-2
         self.corners = ((1,1), (1,top), (right, 1), (right, top))
         for corner in self.corners:
@@ -297,13 +296,20 @@ class CornersProblem(search.SearchProblem):
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
-        return (self.startingPosition, (False, False, False, False))
+        position = self.startingPosition
+        visitedCorners = tuple(position == corner for corner in self.corners)
+        
+        return (position, visitedCorners)
+    
 
     def isGoalState(self, state: Any):
         """
         Returns whether this search state is a goal state of the problem.
         """
-        return all(state[1])
+        position, visitedCorners = state
+
+        return all(visitedCorners)
+        
 
     def getSuccessors(self, state: Any):
         """
@@ -315,21 +321,30 @@ class CornersProblem(search.SearchProblem):
             state, 'action' is the action required to get there, and 'stepCost'
             is the incremental cost of expanding to that successor
         """
-        x, y = state[0]
-        visited = state[1]
+
         successors = []
+        currentPosition, visitedCorners = state
 
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+            # Add a successor state to the successor list if the action is legal
+            # code snippet for figuring out whether a new position hits a wall:
+            x,y = currentPosition
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
             hitsWall = self.walls[nextx][nexty]
 
             if not hitsWall:
-                nextPos = (nextx, nexty)
-                nextVisited = list(visited)          # copy — tuples are immutable
-                if nextPos in self.corners:            # entered a corner → mark it
-                    nextVisited[self.corners.index(nextPos)] = True
-                successors.append(((nextPos, tuple(nextVisited)), action, 1))
+                nextPosition = (nextx, nexty)
+                newVisited = list(visitedCorners)
+                
+                if nextPosition in self.corners:
+                    cornerIndex = self.corners.index(nextPosition)
+                    newVisited[cornerIndex] = True
+            
+                newVisited = tuple(newVisited)
+                nextState = (nextPosition, newVisited)
+
+                successors.append((nextState, action, 1))
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -361,22 +376,29 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
     shortest path from the state to a goal of the problem; i.e.  it should be
     admissible.
     """
-    position, visited = state
-    gs = problem.startingGameState   # mazeDistance expects a GameState, not walls
+    corners = problem.corners # These are the corner coordinates
+    walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    unvisited = [corner for i, corner in enumerate(problem.corners) if not visited[i]]
-    if not unvisited:
+    currentPosition, visitedCorners = state
+
+    # Find unvisited corners
+    notVisited = []
+    for i in range(len(corners)):
+        if visitedCorners[i] == False:
+            notVisited.append(corners[i])
+
+    # check if all corners have been visited      
+    if len(notVisited) == 0:
         return 0
+        
+    # Calculate and store distances for every unvisited corner
+    mdistances = []
+    for corner in notVisited:
+        md = mazeDistance(currentPosition, corner, problem.startingGameState)
+        mdistances.append(md)
 
-    # d1: maze distance from here to the nearest unvisited corner
-    d1 = min(mazeDistance(position, corner, gs) for corner in unvisited)
-    nearest = min(unvisited, key=lambda c: mazeDistance(position, c, gs))
-
-    # d2: from that corner, maze distance to the nearest OTHER unvisited corner
-    rest = [c for c in unvisited if c != nearest]
-    d2 = min(mazeDistance(nearest, c, gs) for c in rest) if rest else 0
-
-    return d1 + d2
+    # Return the maximum shortest distance for remaining journey
+    return max(mdistances)
 
 
 class AStarCornersAgent(SearchAgent):
