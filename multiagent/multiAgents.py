@@ -157,46 +157,85 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        def value(state, depth, agent, alpha, beta):
-            # Terminal tests (same as minimax)
+        startTime = time.perf_counter()
+        def alphabeta(state, depth, agentIndex, alpha, beta):
+
             if state.isWin() or state.isLose() or depth == self.depth:
                 return self.evaluationFunction(state)
 
-            if agent == 0:
-                # MAX layer with alpha
-                v = float("-inf")
-                for a in state.getLegalActions(agent):
-                    v = max(v, value(state.generateSuccessor(agent, a), depth, 1, alpha, beta))
-                    if v > beta:          # MIN already has a better option → prune
-                        return v
-                    alpha = max(alpha, v)
-                return v
-            else:
-                # MIN layer with beta
-                nextAgent = agent + 1
-                nextDepth = depth
-                if nextAgent == state.getNumAgents():
-                    nextAgent = 0
-                    nextDepth = depth + 1
-                v = float("inf")
-                for a in state.getLegalActions(agent):
-                    v = min(v, value(state.generateSuccessor(agent, a), nextDepth, nextAgent, alpha, beta))
-                    if v < alpha:         # MAX already has a better option → prune
-                        return v
-                    beta = min(beta, v)
-                return v
+            possibleActions = state.getLegalActions(agentIndex)
 
-        # Root: same as minimax root, but track alpha
-        bestAction, bestValue = None, float("-inf")
-        alpha = float("-inf")
-        for action in gameState.getLegalActions(0):
-            v = value(gameState.generateSuccessor(0, action), 0, 1, alpha, float("inf"))
-            if v > bestValue:
-                bestValue = v
+            if not possibleActions:
+                return self.evaluationFunction(state)
+
+            numAgents = state.getNumAgents()
+
+            # Determine the next agent and depth
+            nextAgent = (agentIndex + 1) % numAgents
+            nextDepth = depth
+            if nextAgent == 0:
+                nextDepth += 1
+
+            ## MAX: Pacman's turn
+            if agentIndex == 0:
+                bestScore = float('-inf')
+
+                for action in possibleActions:
+                    nextState = state.generateSuccessor(agentIndex, action)
+                    score = alphabeta(nextState, nextDepth, nextAgent, alpha, beta)
+                    bestScore = max(bestScore, score)
+                    
+                    alpha = max(alpha, bestScore)
+                    if alpha > beta:
+                        break
+                return bestScore
+
+            # MIN: Ghosts' turn
+            else:
+                bestScore = float('inf')
+
+                for action in possibleActions:
+                    nextState = state.generateSuccessor(agentIndex, action)
+
+                    score = alphabeta(nextState, nextDepth, nextAgent, alpha, beta)
+
+                    bestScore = min(bestScore, score)
+
+                    beta = min(beta, bestScore)
+
+                    if beta < alpha:
+                        break
+
+                return bestScore
+
+        # Choose Pacman's best initial action
+        bestScore = float('-inf')
+        bestAction = None
+
+        alpha = float('-inf')
+        beta = float('inf')
+
+        possibleActions = gameState.getLegalActions(0)
+        numAgents = gameState.getNumAgents()
+
+        for action in possibleActions:
+            nextState = gameState.generateSuccessor(0, action)
+
+            nextAgent = 1 % numAgents
+            nextDepth = 1 if nextAgent == 0 else 0
+
+            score = alphabeta(
+                nextState, nextDepth, nextAgent, alpha, beta
+            )
+
+            if score > bestScore:
+                bestScore = score
                 bestAction = action
-            alpha = max(alpha, v)
-        print("ROOT VALUE:", bestValue)
+
+            alpha = max(alpha, bestScore)
+
+        elapsedTime = time.perf_counter() - startTime
+        print(f"Decision time: {elapsedTime:.6f} seconds")
         return bestAction
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
