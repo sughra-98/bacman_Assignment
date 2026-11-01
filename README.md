@@ -11,8 +11,8 @@
 | Name | Student ID | Main Contribution |
 |---|---|---|
 | Sughra Hassan  | 20165579| DFS, BFS, UCS, A* (`search.py`); Table T1 experiments ,  MST `foodHeuristic`, `ClosestDotSearchAgent` (`searchAgents.py`) , Minimax ,Table T3 experiments ;| 
-| Maryam Wael | 20174867 | `CornersProblem`, `cornersHeuristic` (`searchAgents.py`); Table T2 |
-| [Name 3] | [ID] | Minimax, α-β, Expectimax, evaluation function (`multiAgents.py`); Tables T3–T5 |
+| Maryam Wael | 20174867 | `CornersProblem`, `cornersHeuristic` (`searchAgents.py`); Table T2 ,  α-β |
+| Qabas Elayan | 20174119 | Expectimax, evaluation function (`multiAgents.py`); Table T5 |
 
 &gt; 📄 Full contribution statement: see `report.pdf`
 
