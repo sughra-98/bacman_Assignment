@@ -361,22 +361,29 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
     shortest path from the state to a goal of the problem; i.e.  it should be
     admissible.
     """
-    position, visited = state
-    gs = problem.startingGameState   # mazeDistance expects a GameState, not walls
+    corners = problem.corners # These are the corner coordinates
+    walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    unvisited = [corner for i, corner in enumerate(problem.corners) if not visited[i]]
-    if not unvisited:
+    currentPosition, visitedCorners = state
+
+    # Find unvisited corners
+    notVisited = []
+    for i in range(len(corners)):
+        if visitedCorners[i] == False:
+            notVisited.append(corners[i])
+
+    # check if all corners have been visited      
+    if len(notVisited) == 0:
         return 0
+        
+    # Calculate and store Manhattan distances for every unvisited corner
+    mdistances = []
+    for corner in notVisited:
+        md = mazeDistance(currentPosition, corner, problem.startingGameState)
+        mdistances.append(md)
 
-    # d1: maze distance from here to the nearest unvisited corner
-    d1 = min(mazeDistance(position, corner, gs) for corner in unvisited)
-    nearest = min(unvisited, key=lambda c: mazeDistance(position, c, gs))
-
-    # d2: from that corner, maze distance to the nearest OTHER unvisited corner
-    rest = [c for c in unvisited if c != nearest]
-    d2 = min(mazeDistance(nearest, c, gs) for c in rest) if rest else 0
-
-    return d1 + d2
+    # Return the maximum shortest distance for remaining journey
+    return max(mdistances)
 
 
 class AStarCornersAgent(SearchAgent):
