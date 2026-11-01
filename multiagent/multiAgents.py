@@ -240,48 +240,77 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
-      Your expectimax agent (question 4)
+    Your expectimax agent (question 4)
     """
 
     def getAction(self, gameState: GameState):
         """
-        Returns the expectimax action using self.depth and self.evaluationFunction
+        Returns the expectimax action using self.depth
+        and self.evaluationFunction.
 
-        All ghosts should be modeled as choosing uniformly at random from their
-        legal moves.
+        All ghosts choose uniformly at random.
         """
-        "*** YOUR CODE HERE ***"
-    
-        def value(state, depth, agent):
-            # Terminal tests (same as minimax)
+
+        def expectimax(state, depth, agentIndex):
+
+            # Terminal condition
             if state.isWin() or state.isLose() or depth == self.depth:
                 return self.evaluationFunction(state)
 
-            if agent == 0:
-                # Pacman → MAX (unchanged)
-                return max(value(state.generateSuccessor(agent, a), depth, 1)
-                        for a in state.getLegalActions(agent))
+            actions = state.getLegalActions(agentIndex)
 
-            # Ghost → CHANCE node: average instead of min!
-            nextAgent = agent + 1
-            nextDepth = depth
-            if nextAgent == state.getNumAgents():
-                nextAgent = 0
+            if not actions:
+                return self.evaluationFunction(state)
+
+            numAgents = state.getNumAgents()
+            nextAgent = (agentIndex + 1) % numAgents
+
+            if nextAgent == 0:
                 nextDepth = depth + 1
+            else:
+                nextDepth = depth
 
-            actions = state.getLegalActions(agent)
-            total = sum(value(state.generateSuccessor(agent, a), nextDepth, nextAgent)
-                        for a in actions)
-            return total / len(actions)
+            # Pacman: MAX node
+            if agentIndex == 0:
+                bestValue = float('-inf')
 
-        # Root: same as minimax root
-        bestAction, bestValue = None, float("-inf")
+                for action in actions:
+                    successor = state.generateSuccessor(agentIndex, action)
+
+                    value = expectimax(successor, nextDepth, nextAgent)
+
+                    bestValue = max(bestValue, value)
+
+                return bestValue
+
+            # Ghost: CHANCE node
+            else:
+                totalValue = 0
+
+                for action in actions:
+                    successor = state.generateSuccessor(agentIndex, action)
+
+                    value = expectimax(successor, nextDepth, nextAgent)
+
+                    totalValue += value
+
+                return totalValue / len(actions)
+
+        # Choose the best action for Pacman
+        bestAction = None
+        bestValue = float('-inf')
+
         for action in gameState.getLegalActions(0):
-            v = value(gameState.generateSuccessor(0, action), 0, 1)
-            if v > bestValue:
-                bestValue = v
+            successor = gameState.generateSuccessor(0, action)
+
+            value = expectimax(successor, 0, 1)
+
+            if bestAction is None or value > bestValue:
+                bestValue = value
                 bestAction = action
+
         return bestAction
+
 
 def betterEvaluationFunction(currentGameState: GameState):
     # 1. Terminal states
