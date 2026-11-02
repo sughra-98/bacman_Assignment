@@ -14,7 +14,7 @@
 | Maryam Wael | 20174867 | `CornersProblem`, `cornersHeuristic` (`searchAgents.py`); Table T2 ,  α-β |
 | Qabas Elayan | 20174119 | Expectimax, evaluation function (`multiAgents.py`); Table T5 |
 
-&gt; 📄 Full contribution statement: see `report.pdf`
+
 
 ---
 
