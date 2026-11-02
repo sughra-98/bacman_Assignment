@@ -11,7 +11,7 @@
 | Name | Student ID | Main Contribution |
 |---|---|---|
 | Sughra Hassan  | 20165579| DFS, BFS, UCS, A* (`search.py`); Table T1 experiments ,  MST `foodHeuristic`,  , Minimax ,Table T3 experiments ;| 
-| Maryam Wael | 20174867 | `CornersProblem`, `cornersHeuristic` (`searchAgents.py`); Table T2 ,  α-β |
+| Mariam Wael | 20174867 | `CornersProblem`, `cornersHeuristic` (`searchAgents.py`); Table T2 ,  α-β |
 | Qabas Elayan | 20174119 | `ClosestDotSearchAgent` (`searchAgents.py`), Expectimax, evaluation function (`multiAgents.py`); Table T5 |
 
 
@@ -48,7 +48,7 @@ All scores obtained with `python autograder.py --no-graphics` (Berkeley CS188 au
 | Q3 | Uniform-Cost Search | **3/3** | |
 | Q4 | A* Search | **3/3** | Handles inconsistent heuristics via best-g re-expansion |
 | Q5 | CornersProblem formulation | **3/3** | State = (position, visited-corner bitmask) |
-| Q6 | cornersHeuristic | **3/3** | 393 expansions vs 1966 (BFS) on mediumCorners |
+| Q6 | cornersHeuristic | **3/3** | **801** expansions (A* with heuristic corners) vs **1966** (BFS) on mediumCorners |
 | Q7 | foodHeuristic ⭐ | **5/4** *(extra credit)* | **410** expansions on trickySearch (top threshold: 7000; UCS ≈ 170,000) |
 | Q8 | ClosestDotSearchAgent ⭐ | **3/3** | Greedy BFS-to-nearest; fast, near-optimal (cost 68 vs optimal 60) |
 
@@ -74,7 +74,7 @@ All scores obtained with `python autograder.py --no-graphics` (Berkeley CS188 au
 |---|---|
 | T1 — Uninformed vs informed | A* expands 549 nodes vs UCS's 620 on bigMaze (identical optimal cost 210) |
 | T2 — Heuristic value | cornersHeuristic: 393 vs 1966 BFS expansions (−80%) at equal cost |
-| T3 — α-β vs minimax | Identical root values at all depths; ~1.8× faster per move (0.034 s vs 0.062 s) |
+| T3 — α-β vs minimax | Identical root values at all depths; ~1.8× faster (0.034 s vs 0.062 s) |
 | T4 — Opponent modeling | α-β (perfect adversary): 0/10 wins; Expectimax (random): 2/10 wins on trappedClassic |
 | T5 — Evaluation design | 10/10 wins, avg 1123.5 with feature-weighted evaluation function |
 | Bonus — Cost vs optimality | MST heuristic: optimal path 60, 410 expansions; greedy: 13% longer path, near-instant |
