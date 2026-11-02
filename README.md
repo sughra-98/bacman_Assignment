@@ -73,7 +73,7 @@ All scores obtained with `python autograder.py --no-graphics` (Berkeley CS188 au
 | Experiment | Headline result |
 |---|---|
 | T1 — Uninformed vs informed | A* expands 549 nodes vs UCS's 620 on bigMaze (identical optimal cost 210) |
-| T2 — Heuristic value | cornersHeuristic: 393 vs 1966 BFS expansions (−80%) at equal cost |
+| T2 — Heuristic value | cornersHeuristic: 801 vs 1966 BFS expansions (59.3%) at equal cost |
 | T3 — α-β vs minimax | Identical root values at all depths; ~1.8× faster (0.034 s vs 0.062 s) |
 | T4 — Opponent modeling | α-β (perfect adversary): 0/10 wins; Expectimax (random): 2/10 wins on trappedClassic |
 | T5 — Evaluation design | 10/10 wins, avg 1123.5 with feature-weighted evaluation function |
