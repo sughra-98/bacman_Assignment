@@ -127,13 +127,7 @@ python autograder.py -q q5 --no-graphics
 
 ---
 
-## 🧠 Implementation Notes
 
-- **A\* (Q4):** goal test on dequeue (not on enqueue) + best-g dict with stale-entry skipping → correct under *inconsistent* heuristics, as required by the autograder.
-- **CornersProblem (Q5):** state = `(position, (v₁,v₂,v₃,v₄))` bitmask of visited corners; corners marked on entry; tuples for hashability.
-- **Heuristics:** Manhattan (admissible — walls only add distance); corners = sum of two shortest maze-distance legs; **food = MST over {position} ∪ remaining food** (optimal walk ≥ MST ⇒ admissible); maze distances BFS-computed and cached (`heuristicInfo`: food–food once, position–food on demand).
-- **Adversarial search:** one recursive `value(state, depth, agent)` with agent-index wrap-around; Expectimax replaces `min` with uniform `average` at ghost nodes.
-- **Evaluation function:** `score − 4·food + 10/(d+1)` food reward, ghost cliff penalties (−200 at d≤1, −50 at d=2), `+20/(d+1)` scared-ghost attraction, −15/capsule, ±∞ terminal values.
 
 ## 📚 References
 
